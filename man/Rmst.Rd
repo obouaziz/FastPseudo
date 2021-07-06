@@ -7,7 +7,7 @@
 Rmst(Time, status, tau)
 }
 \arguments{
-\item{Time}{a continuous time variable. Must be sorted}
+\item{Time}{a continuous time variable.}
 
 \item{status}{an indicator for censoring for the corresponding Time variable.}
 

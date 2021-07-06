@@ -2,13 +2,29 @@
 #'
 #' Compute the Restricted Mean Survival Time (RMST) for right-censored data
 #'
-#' @param Time a continuous time variable. Must be sorted
+#' @param Time a continuous time variable.
 #' @param status an indicator for censoring for the corresponding Time variable.
 #' @param tau the time endpoint for computing the RMST
 
-Rmst=function(Time,status,tau){
-  Tobs_ord<-Time
-  status_ord<-status
+Rmst <- function(Time,status,tau) {UseMethod("Rmst")}
+#' @export
+Rmst.default<-function(Time,status,tau){
+  Tsort<-sort(Time,index.return=TRUE)
+  Tobs_ord<-Tsort$x
+  status_ord<-status[Tsort$ix]
+  result<-list(rmst=Rmst_ord(Tobs_ord,status_ord,tau),tau=tau)
+  class(result)<-"Rmst"
+  return(result)
+}
+#' @export
+print.Rmst <- function(x, ...)
+{
+  cat(paste(" restricted mean with upper limit = ",x$tau,"\n",sep=""))
+  print(round(x$rmst[1],4))#x$rmst[1]
+}
+
+### Helper ####
+Rmst_ord=function(Tobs_ord,status_ord,tau){
   resKM=survival::survfit(survival::Surv(Tobs_ord,status_ord)~1)
   if (max(Tobs_ord[status_ord])<tau){ #case where tau is greater than last observed event of interest
     K=sum(status_ord)
