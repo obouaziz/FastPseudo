@@ -10,6 +10,10 @@
 Rmst <- function(Time,status,tau) {UseMethod("Rmst")}
 #' @export
 Rmst.default<-function(Time,status,tau){
+  if (length(Time)!=length(status)) stop("'Time' and 'status' must have the same length")
+  if (is.null(tau)) stop("a finite value of tau must be specified")
+  if (is.na(tau)|(tau==Inf)) stop("a finite value of tau must be specified")
+  if (tau<0) stop("'tau' must be positive")
   Tsort<-sort(Time,index.return=TRUE)
   Tobs_ord<-Tsort$x
   status_ord<-status[Tsort$ix]

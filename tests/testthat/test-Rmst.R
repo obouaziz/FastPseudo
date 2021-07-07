@@ -28,7 +28,13 @@ test_that("Rmst function works", {
   expect_equal(sum(abs(our_estimate$rmst-truth)<2),1)
 })
 
-
+test_that("Time and status must have the same length for the function Rmst",{
+  expect_error(Rmst(c(1,2,3,4),c(1,1,0),tau=3))
+  expect_error(Rmst(c(1,2,3,4),c(1,1,0,0),tau=-3))
+  expect_error(Rmst(c(1,2,3,4),c(1,1,0,0),tau=Inf))
+  expect_error(Rmst(c(1,2,3,4),c(1,1,0,0),tau=NA))
+  expect_error(Rmst(c(1,2,3,4),c(1,1,0,0),tau=NULL))
+})
 
 
 

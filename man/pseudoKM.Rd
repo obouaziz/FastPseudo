@@ -53,17 +53,17 @@ VonM=pseudo_val$pseudoval
 tseq=pseudo_val$tseq
 
 par(mfrow=c(2,2))
-plot(tseq,VonM[,3],type="s")
+plot(tseq,VonM[,3],type="s",xlab="Time",ylab="Pseudo-val. for obs. 3")
 abline(v=Tobs[3],lty=2,col="red")
-plot(tseq,VonM[,48],type="s")
+plot(tseq,VonM[,48],type="s",xlab="Time",ylab="Pseudo-val. for obs. 48")
 abline(v=Tobs[48],lty=2,col="red")
-plot(tseq,VonM[,1],type="s")
+plot(tseq,VonM[,1],type="s",xlab="Time",ylab="Pseudo-val. for obs. 1")
 abline(v=Tobs[1],lty=2,col="red")
-plot(tseq,VonM[,5],type="s")
+plot(tseq,VonM[,5],type="s",xlab="Time",ylab="Pseudo-val. for obs. 5")
 abline(v=Tobs[5],lty=2,col="red")
 par(mfrow=c(1,1))
 
-plot(tseq,apply(VonM,1,mean),type="s")
+plot(tseq,apply(VonM,1,mean),type="s",xlab="Time",ylab="Mean of pseudo-values")
 lines(survfit(Surv(Tobs,status)~1),col="red",conf.int=FALSE)
 
 #Illustration on simple simulated data for the pseudo-values for the RMST

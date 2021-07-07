@@ -39,17 +39,17 @@
 #' tseq=pseudo_val$tseq
 #'
 #' par(mfrow=c(2,2))
-#' plot(tseq,VonM[,3],type="s")
+#' plot(tseq,VonM[,3],type="s",xlab="Time",ylab="Pseudo-val. for obs. 3")
 #' abline(v=Tobs[3],lty=2,col="red")
-#' plot(tseq,VonM[,48],type="s")
+#' plot(tseq,VonM[,48],type="s",xlab="Time",ylab="Pseudo-val. for obs. 48")
 #' abline(v=Tobs[48],lty=2,col="red")
-#' plot(tseq,VonM[,1],type="s")
+#' plot(tseq,VonM[,1],type="s",xlab="Time",ylab="Pseudo-val. for obs. 1")
 #' abline(v=Tobs[1],lty=2,col="red")
-#' plot(tseq,VonM[,5],type="s")
+#' plot(tseq,VonM[,5],type="s",xlab="Time",ylab="Pseudo-val. for obs. 5")
 #' abline(v=Tobs[5],lty=2,col="red")
 #' par(mfrow=c(1,1))
 #'
-#' plot(tseq,apply(VonM,1,mean),type="s")
+#' plot(tseq,apply(VonM,1,mean),type="s",xlab="Time",ylab="Mean of pseudo-values")
 #' lines(survfit(Surv(Tobs,status)~1),col="red",conf.int=FALSE)
 #'
 #' #Illustration on simple simulated data for the pseudo-values for the RMST
@@ -188,6 +188,7 @@
 pseudoKM <- function(Time,status,tau=NULL) {UseMethod("pseudoKM")}
 #' @export
 pseudoKM.default<-function(Time,status,tau=NULL){
+  if (length(Time)!=length(status)) stop("'Time' and 'status' must have the same length")
   Tsort<-sort(Time,index.return=TRUE)
   Tobs_ord<-Tsort$x
   status_ord<-status[Tsort$ix]
@@ -210,11 +211,43 @@ pseudoKM.default<-function(Time,status,tau=NULL){
   class(result)<-"pseudoKM"#result
   return(result)#result
 }
+
+#' @export
+pseudoKM.Surv <- function(Time,status=NULL,tau=NULL)#,alternative="two.sided"
+{
+  formula=Time
+  tau2=tau
+  Time<-formula[,1]
+  status<-formula[,2]
+  Tsort<-sort(Time,index.return=TRUE)
+  Tobs_ord<-Tsort$x
+  status_ord<-status[Tsort$ix]
+  if (is.null(tau2))#(rmst==FALSE)
+  {
+    pseudoval=pseudo_ord(Tobs_ord,status_ord)
+    pseudoval=pseudoval[,order(Tsort$ix)] #put the values in initial order
+    #tseq=Tobs_ord
+    result<-list(pseudoval=pseudoval,tseq=Tobs_ord)
+
+  } else {
+    #if (rmst==TRUE)
+    {
+      pseudoval=pseudoRMST_ord(Tobs_ord,status_ord,tau2)
+      pseudoval=pseudoval[order(Tsort$ix)] #put the values in initial order
+      result<-list(pseudoval=pseudoval)
+    }
+  }
+  #result<-list(pseudoval=pseudoval,tau=tau)
+  class(result)<-"pseudoKM"#result
+  return(result)#result
+}
+
 ### Helper ####
 #Compute the pseudo-values for the survival function for RC data for all time points corresponding to observations
 #Works for ordered times only
 pseudo_ord<-function(Tobs_ord,status_ord){
   n<-length(Tobs_ord)
+  #if (n!=length(status_ord)) stop("'Time' and 'status' must have the same length")
   resKM=survival::survfit(survival::Surv(Tobs_ord,status_ord)~1)
   VonM<-matrix(NA,n,n)
   H<-seq(1,1/n,by=-1/n)
@@ -230,7 +263,12 @@ pseudo_ord<-function(Tobs_ord,status_ord){
 #Compute the pseudo-values for RMST for RC data with endpoint specified by tau
 #Works for ordered times only
 pseudoRMST_ord<-function(Tobs_ord,status_ord,tau){
+  #if (is.na(tau)) stop("'tau' cannot be equal to NA")
+  #if (tau==Inf) stop("'tau' cannot be infinite")
+  if (is.na(tau)|(tau==Inf)) stop("a finite value of tau must be specified")
   n<-length(Tobs_ord)
+  if (n!=length(status_ord)) stop("'Time' and 'status' must have the same length")
+  if (sum(Tobs_ord<=tau)<3) stop("the value of tau is too small")
   VonM<-rep(NA,n)
   resKM=survival::survfit(survival::Surv(Tobs_ord,status_ord)~1)
   #for large sample sizes, sometimes some Tobs are removed in survfit (so in resKM)...
