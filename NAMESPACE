@@ -3,3 +3,5 @@
 S3method(Rmst,default)
 S3method(print,Rmst)
 S3method(pseudoKM,default)
+export(Rmst)
+export(pseudoKM)

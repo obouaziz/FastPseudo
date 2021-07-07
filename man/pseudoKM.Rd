@@ -19,7 +19,7 @@ For the survival function (when tau equals NULL) it returns the pseudo values in
 are in the rows. For the RMST (when tau is specified) it returns the pseudo values in vector form.
 }
 \description{
-Compute pseudo values for the Kaplan-Meier estimator or for the Restricted Mean Survival Time based on the Kaplan-Meier estimator.
+Compute pseudo values for the Kaplan-Meier estimator or for the Restricted Mean Survival Time (RMST) based on the Kaplan-Meier estimator.
 We use a fast approximation of the jackknife method.
 }
 \details{
@@ -39,6 +39,7 @@ in the \code{geepack} package (see Examples below).
 }
 \examples{
 #Illustration of the pseudo-values for the Kaplan-Meier estimator on a simple simulated set
+require(survival)
 n=100
 cpar=0.1
 set.seed(28)
@@ -66,11 +67,30 @@ plot(tseq,apply(VonM,1,mean),type="s")
 lines(survfit(Surv(Tobs,status)~1),col="red",conf.int=FALSE)
 
 #Illustration on simple simulated data for the pseudo-values for the RMST
+#Simulation in the Exponential model (no covariates)
+
+n<-100
+lambda=0.5
+TrueTime=rexp(n,rate=lambda)
+tau=10
+tau=c(2,4,6,8,10)
+cpar=0.2
+Cens=rexp(n,cpar)
+Tobs=pmin(TrueTime,Cens) #observed times
+status=TrueTime<=Cens #mean(status) #36\% of censoring on average
+
+pseudo_val=sapply(tau,function(x){pseudoKM(Tobs,status,tau=x)$pseudoval})
+apply(pseudo_val,2,mean) #check that mean of pseudo-values return the RMST
+sapply(tau,function(x){Rmst(Tobs,status,x)$rmst}) #compute the RMST
+sapply(tau,function(x){(1-exp(-lambda*x))/lambda}) #the truth
+
+#Illustration on simple simulated data for the pseudo-values for the RMST
 #Simulation in a linear model
 set.seed(28)
-n<-1000
+require(geepack)
+n<-4000
 sigma=1
-tau=40
+tau=400
 alpha=c(3)
 X=rnorm(n,2,0.25)
 epsi=rnorm(n,0,sigma)
@@ -78,9 +98,11 @@ TrueTime=alpha*X+epsi
 Cens=rep(Inf,n)
 Tobs=pmin(TrueTime,Cens)
 status=TrueTime<=Cens
+
 VonM=pseudoKM(Tobs,status,tau)$pseudoval
 data_VonM<-data.frame(Y=c(VonM),X=X,id=rep(1:n))
-resultEst=geese(Y~X,id=id,jack=TRUE,family="gaussian", mean.link="identity", corstr="independence",scale.fix=TRUE,data=data_VonM)
+resultEst=geese(Y~X,id=id,jack=TRUE,family="gaussian", mean.link="identity",
+corstr="independence",scale.fix=TRUE,data=data_VonM)
 summary(resultEst)
 
 
@@ -90,6 +112,7 @@ summary(resultEst)
 
 set.seed(28)
 require(geepack)
+require(survival)
 n=4000
 shape=3;scale=30;cpar=0.01
 #Simulate covariates
@@ -132,7 +155,8 @@ tseq=Tobs_ord[n*seq(5,95,by=10)/100]
 M=length(n*seq(5,95,by=10)/100)
 data_pseudo1<-data.frame(Y=1-c(pseudo_VM),X=rep(X,each=M),Time=rep(tseq,n),id=rep(1:n,each=M))
 #data_pseudo1<-data.frame(Y=1-c(pseudo_VM),X=rep(X_ord,each=M),Time=rep(tseq,n),id=rep(1:n,each=M))
-result1<-geese(Y~X+as.factor(Time)-1,id=id,jack=TRUE,family="gaussian", mean.link="cloglog", corstr="independence",scale.fix=TRUE,data=data_pseudo1)
+result1<-geese(Y~X+as.factor(Time)-1,id=id,jack=TRUE,family="gaussian",
+mean.link="cloglog", corstr="independence",scale.fix=TRUE,data=data_pseudo1)
 summary(result1)
 
 #Illustration on simulated data for the pseudo-values for the RMST
@@ -161,10 +185,10 @@ X11=(X1==1 & X2==1)
 X_ord00=X00[Tsort$ix];X_ord01=X01[Tsort$ix];X_ord10=X10[Tsort$ix];X_ord11=X11[Tsort$ix]
 #The true value of the parameters are c(3.812552,0.05705492,0.05730445,0.1044318)
 #Those values were based on a Monte-Carlo experiment with n=10 000 000, using the true times
+
 VonM=pseudoKM(Tobs,status,tau)$pseudoval
 data_VonM<-data.frame(Y=c(VonM),X2=X01,X3=X10,X4=X11,id=rep(1:n))
-resultEst=geese(Y~X2+X3+X4,id=id,jack=TRUE,family="gaussian", mean.link="identity", corstr="independence",scale.fix=TRUE,data=data_VonM)
-#data_VonM<-data.frame(Y=c(VonM),X2=X_ord01,X3=X_ord10,X4=X_ord11,id=rep(1:n))
-#resultEst=geese(Y~X2+X3+X4,id=id,jack=TRUE,family="gaussian", mean.link="identity", corstr="independence",scale.fix=TRUE,data=data_VonM)
+resultEst=geese(Y~X2+X3+X4,id=id,jack=TRUE,family="gaussian",
+mean.link="identity", corstr="independence",scale.fix=TRUE,data=data_VonM)
 summary(resultEst)
 }

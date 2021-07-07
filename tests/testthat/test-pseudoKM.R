@@ -15,7 +15,7 @@ status=TrueTime<=Cens #mean(status) #25% of censoring on average
 status_ord<-status[Tsort$ix]
 X_ord=X[Tsort$ix]
 
-VonM=pseudoKM(Tobs_ord,status_ord,tau=NULL)
+VonM=pseudoKM(Tobs_ord,status_ord,tau=NULL)$pseudoval
 pseudo_VM=VonM[n*seq(5,95,by=10)/100,] #we compute the pseudo-values for 10 times
 tseq=Tobs_ord[n*seq(5,95,by=10)/100]
 M=length(n*seq(5,95,by=10)/100)
