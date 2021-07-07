@@ -2,12 +2,12 @@ Package: FastPseudo
 Title: Fast implementation of pseudo-observations for right-censored and interval censored data, for the survival function and the RMST
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Olivier",
+           family = "Bouaziz",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
+           email = "olivier.bouaziz@parisdescartes.fr",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: Fast implementation of pseudo-observations are implemented for 
+Description: Fast implementation of pseudo-observations are implemented for the Kaplan-Meier estimator and its RMST for right-censored data and for parametric survival model and its RMST for interval-censored data. Only the piecewise constant hazard model is currently implemented.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
