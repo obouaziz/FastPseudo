@@ -14,10 +14,10 @@ rsurv(n, cuts = NULL, alpha)
 \item{alpha}{the value of the hazard function between each cut. Should be of length equal to length(cuts)+1.}
 }
 \value{
-A time vector of size \code{n} drawn from a piecewise constant hazard model with hazard equal to \code{alpha} between \code{cuts}.
+A time vector of size \code{n} drawn from a PCH model with hazard equal to \code{alpha} between \code{cuts}.
 }
 \description{
-Given a set of cuts and hazard values, generates a survival data sample from a piecewise-constant hazard model
+Given a set of cuts and hazard values, generates a survival data sample from a piecewise-constant hazard (PCH) model
 }
 \examples{
 n=400

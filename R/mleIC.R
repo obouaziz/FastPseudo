@@ -1,18 +1,53 @@
 #' Computation of the maximum likelihood estimator in the PCH model for interval-censored data
 #'
 #' Given a sequence of time, a set of cuts and initial log-hazard values, compute
-#' the maximum likelihood estimator (MLE) of the hazard function from a piecewise-constant hazard model.
-#' The estimator is based on the EM algorithm.
-#' @param Left the time sequence for the left-time endpoint. Must be non-negative
-#' @param Right the time sequence for right-time endpoint. The value \code{Inf} for right-censored data is allowed.
-#' @param cuts the sequence of cuts in the pch model. Default is \code{NULL} which corresponds to the exponential model.
-#' @param a the initial value of the log-hazard function between each cut. Should be of length equal to \code{length(cuts)+1}.
-#' @param maxiter the total number of iterations in the EM algorithm. Default is 1000.
+#' the maximum likelihood estimator (MLE) of the hazard function from a piecewise-constant hazard model for interval-censored
+#' data. The estimator is based on the EM algorithm.
+#' @param Left the time sequence for the left-time endpoint. Must be non-negative.
+#' @param Right the time sequence for the right-time endpoint. Each component must be greater than the corresponding
+#' component of \code{Left}. The value \code{Inf} for right-censored data is allowed.
+#' @param cuts the sequence of cuts in the pch model. Default value equals \code{NULL} which corresponds to the exponential model.
+#' @param a the initial value of the log-hazard function between each cut. Must be of length equal to \code{length(cuts)+1}.
+#' The default value is \eqn{log(0.5)} for all segments.
+#' @param maxiter the total maximum number of iterations in the EM algorithm. Default is 1000.
 #' @param tol the tolerance value in the EM algorithm. The algorithm stops when the relative error
-#' between new and previous log-hazard estimate value is less than \code{tol}. Default is 1e-5.
+#' between new and previous log-hazard update value is less than \code{tol}. Default is 1e-12.
 #' @param verbose if \code{TRUE}, at each iteration step the current value of the estimator is displayed along with the relative error
-#' between new and previous log-hazard estimate value.
-#' @return return the MLE
+#' between new and previous log-hazard update value in the EM algorithm.
+#' @details Returns the MLE for the piecewise constant hazard model defined in the following way:
+#' \deqn{\lambda(t)=\sum 1(c_{k-1}< t\le c_k) exp(a_k),}
+#' where the sum is over \eqn{k} ranging from \eqn{1} to \eqn{K}, with \eqn{K} equals to the length of \code{cuts} plus one,
+#' \eqn{c_0=0}, \eqn{c_K} equals infinity and the \eqn{c_k}'s are provided by \code{cuts}. The algorithm estimates the \eqn{a_k}'s using the EM
+#' algorithm. The \eqn{a_k}'s are initialized by the value given in \code{a}. The EM algorithm is not sensitive to the initialization
+#' and we recommend to simply use the default value which is equal to \eqn{log(0.5)} for each \eqn{a_k}.
+#'
+#' The algorithm deals with interval-censored data supplied by the \code{Left} and \code{Right} vectors. It is possible
+#' to include right-censored data by specifying \code{Right=Inf} and to have exact observations by specifying
+#' the same value to \code{Left} and \code{Right}.
+#'
+#' Two regularity conditions arise from maximum likelihood theory. The first one states that the probability that
+#' the observed intervals (for which the right endpoint is not infinite) intersect a cut should be positive. If that is not the case, the
+#' algorithm will still be stable, returning the hazard value \eqn{0} for the corresponding cut. The second condition states that the probability
+#' that a left endpoint is greater than the left value of a cut should be positive. If there are no observations verifying this
+#' condition then the algorithm will diverge and the hazard value for this cut will increase at each iteration of the EM algorithm. This will make the
+#' algorithm return an error. More generally, one should carefully check the convergence of the algorithm by setting \code{verbose} to \code{TRUE}.
+#'
+#' The function \code{mle.ic} returns an object from the \code{survIC} class. For such class, there are a \code{plot} and \code{lines} options.
+#' When applying \code{plot} (or \code{lines}) to a \code{survIC} class object, one can choose the option \code{surv=FALSE} (the default)
+#' or \code{surv=TRUE}. In the former case, the hazard function will be plotted and in the latter case the survival function will be displayed.
+#' One can set \code{xlim} to specific values in the \code{plot} arguments (see the Examples section for more information).
+#' @return
+#' \tabular{lll}{
+#' \code{a} \tab  \code{ } \tab the estimated value of the log-hazard (the \eqn{a_k}'s) \cr
+#' \tab \tab \cr
+#' \code{lambda} \tab \code{ }  \tab the estimated value of the hazard (the \eqn{exp(a_k)}'s)\cr
+#' \tab \tab \cr
+#' \code{cuts} \tab  \code{ } \tab the cuts used in the PCH model as initially supplied in the \code{mleIC} function\cr
+#' \tab \tab \cr
+#' \code{itermax} \tab \code{ }  \tab the number of iterations used in the EM algorithm to reach convergence\cr
+#' \tab \tab \cr
+#' \code{test} \tab  \code{ } \tab the relative error that has been reached at convergence of the algorithm\cr
+#' }
 #' @export
 #' @examples
 #' n=4000
@@ -37,38 +72,82 @@
 #' Right[1:(n)]=sapply(1:(n),function(i)visit[1:(n),][i,as.numeric(J[i])+1])
 #' #View(data.frame(Left,Right,TrueTime)) #To see the generated data
 #' sum(Right[1:(n)]==Inf)/n #percentage of right-censored data
-#' result=mle.ic(Left,Right,cuts=cuts,a=rep(log(0.5),length(cuts)+1),
+#' result=mleIC(Left,Right,cuts=cuts,a=rep(log(0.5),length(cuts)+1),
 #' maxiter=1000,tol=1e-12,verbose=TRUE)
 #' result$lambda #the estimation
 #' alpha #true value
+#'
 #' plot(result)
 #' lines(c(0,cuts,100),c(alpha,alpha[5]),type="s",col="red") #true hazard
 #' seqtime=seq(0,200,length.out=1000)
 #' plot(result,xlim=c(0,200),surv=TRUE)
 #' lines(seqtime,exp(-pchcumhaz(seqtime,cuts,alpha)),type="l",col="red") #true survival function
-#' resultbis=mle.ic(Left,Right,cuts=NULL,a=rep(log(0.5),length(cuts)+1),
+#' resultbis=mleIC(Left,Right,cuts=NULL,a=rep(log(0.5),1),
 #' maxiter=1000,tol=1e-12,verbose=TRUE)
 #' lines(resultbis,xlim=c(0,200),col="blue",surv=TRUE)
+#'
+#' ##Example with exact values
+#' Right[1:100]<-TrueTime[1:100]
+#' Left[1:100]<-TrueTime[1:100]
+#' result=mleIC(Left,Right,cuts=cuts,a=rep(log(0.5),length(cuts)+1),
+#' maxiter=1000,tol=1e-12,verbose=TRUE)
+#' alpha #true value
 
 #' @export
-mle.ic=function(Left,Right,cuts=NULL,a,maxiter=1000,tol=1e-5,verbose=FALSE){
+mleIC=function(Left,Right,cuts=NULL,a=rep(log(0.5),length(cuts)+1),maxiter=1000,tol=1e-12,verbose=FALSE){
+  if (length(Left)!=length(Right)) stop("'Left' and 'Right' must have the same length")
+  if (all(diff(cuts)>0)==FALSE) {
+    stop("cuts must be an increasing sequence with no ex-aequo!")}
   n=length(Left)
-  test=Qerr=rep(NA,maxiter)
-  RC<-Right==Inf
+
+  #code to include exact observations
+  idEx<-(Left==Right)
+  nEx=sum(idEx)
+  noEx=n-nEx
+  RC<-Right[idEx==FALSE]==Inf
+  #RC<-Right==Inf
+
+  test=rep(NA,maxiter)
+
   cutsInf=c(0,cuts,Inf)
   k=length(cuts)+1
+  if (length(a)!=k) stop("'a' must be one length longer than 'cuts'")
 
-  Idx=lapply(1:k,function(x){Left<cutsInf[x+1] & Right>cutsInf[x]})
-  Lcl=lapply(1:k,function(x){pmax(cutsInf[x],Left)})
-  Rcl=lapply(1:k,function(x){pmin(cutsInf[x+1],Right)})
+  #code to include exact observations
+  Idx=lapply(1:k,function(x){Left[idEx==FALSE]<cutsInf[x+1] & Right[idEx==FALSE]>cutsInf[x]})
+  Lcl=lapply(1:k,function(x){pmax(cutsInf[x],Left[idEx==FALSE])})
+  Rcl=lapply(1:k,function(x){pmin(cutsInf[x+1],Right[idEx==FALSE])})
 
+  #Idx=lapply(1:k,function(x){Left<cutsInf[x+1] & Right>cutsInf[x]})
+  #Lcl=lapply(1:k,function(x){pmax(cutsInf[x],Left)})
+  #Rcl=lapply(1:k,function(x){pmin(cutsInf[x+1],Right)})
+
+  #code to include exact observations
+  if(nEx==0){
+    Aex<-Bex<-J<-rep(0,k)} else {
+      exact=Left[idEx]
+      weights=rep(1,nEx)
+      J=cut(exact,breaks=cutsInf,labels=1:k,right=FALSE)
+      cuts0=c(0,cuts)
+      Aex=sapply(split(weights,J),sum)
+      riskFun=function(x){
+        vect=c(diff(cuts0),0)
+        vect[J[x]]<-(exact[x]-cuts0[J[x]])
+        if (as.numeric(J[x])<k){vect[(as.numeric(J[x])+1):k]<-0};return(vect)}
+      Bex=t(sapply(1:nEx,riskFun))
+      if (k==1){
+        Bex=sum(Bex)
+      } else {
+        Bex=apply(Bex,2,sum)
+      }
+      }
   for (iter in 1:maxiter)
   {
     old.a=a
 
-    stat=exhaust.ic_No_Cov(n,Left,Right,cuts,a,Idx,RC,Lcl,Rcl)#exhaust.ic(Left,Right,cuts,a,p)
-    N=stat$N;APi=stat$APi;BPi=stat$BPi;APiall=stat$APiall;BPiall=stat$BPiall
-    result=estime_No_Cov(APi,BPi,cuts,n)
+    stat=exhaust.ic_No_Cov(n,noEx,Left[idEx==FALSE],Right[idEx==FALSE],cuts,a,Idx,RC,Lcl,Rcl)#exhaust.ic(Left,Right,cuts,a,p)
+    APi=stat$APi;BPi=stat$BPi;APiall=stat$APiall;BPiall=stat$BPiall #N=stat$N;
+    result=estime_No_Cov(APi,BPi,Aex,Bex,cuts,n)
     a=result$a
     a_noInf<-a!=-Inf
     test[iter]=max(abs(a[a_noInf]-old.a[a_noInf])/abs(a[a_noInf]))
@@ -136,7 +215,8 @@ pch.cumhaz=function(Time,cuts,a) {
 
 
 #Return the exhaustive statistics for one loop inside the EM algorithm
-exhaust.ic_No_Cov=function(n,Left,Right,cuts,a,Idx,RC,Lcl,Rcl){
+#noEx represents the number of individuals where Left and Right are not equal
+exhaust.ic_No_Cov=function(n,noEx,Left,Right,cuts,a,Idx,RC,Lcl,Rcl){
   k=length(cuts)+1
   lambda=exp(a)
   cutsInf=c(0,cuts,Inf)
@@ -145,7 +225,9 @@ exhaust.ic_No_Cov=function(n,Left,Right,cuts,a,Idx,RC,Lcl,Rcl){
   cumR=pch.cumhaz(Right,cuts=cuts,a=a)
   cumcl=c(0,pch.cumhaz(cuts,cuts=cuts,a=a))
 
-  logA<-logB<-matrix(-Inf,n,k)
+  if(noEx==0){
+    APiall=BPiall=matrix(0,n,k);APi=BPi=rep(0,k)} else {
+  logA<-logB<-matrix(-Inf,noEx,k)
   for (l in 1:k)
   { #this condition is useful only if lambda[1]==0 and there exists
     #L_i, R_i s.t L_i<c_1 and R_i<c_1, this gives S(L_i)-S(R_i)=0
@@ -163,20 +245,27 @@ exhaust.ic_No_Cov=function(n,Left,Right,cuts,a,Idx,RC,Lcl,Rcl){
       logB[id,l]=log(1/lambda[l]+L-cutsInf[l])-lambda[l]*L+Bterm+lastpart
     }
   }
-  return(list(APi=apply(exp(logA),2,sum),BPi=apply(exp(logB),2,sum),APiall=exp(logA),BPiall=exp(logB)))
+  APiall=exp(logA)
+  BPiall=exp(logB)
+  APi=apply(APiall,2,sum)
+  BPi=apply(BPiall,2,sum)
+  }
+  return(list(APi=APi,BPi=BPi,APiall=APiall,BPiall=BPiall))
 }
 
 #Return mle estimates from the exhaustive statistics
-estime_No_Cov=function(APi,BPi,cuts,n){
-  idx=(APi!=0)
+estime_No_Cov=function(APi,BPi,Aex,Bex,cuts,n){
+  #idx=((APi)!=0))
+  #code to include exact observations
+  idx=((APi+Aex)!=0)
   cumA=c(rev(cumsum(rev(APi[-1]))),0)
   a=rep(-Inf,length(APi))
-  a[idx]=log(APi[idx])-log(cumA[idx]*c(diff(c(0,cuts)),0)[idx]+BPi[idx])
+  a[idx]=log(APi[idx]+Aex[idx])-log(cumA[idx]*c(diff(c(0,cuts)),0)[idx]+BPi[idx]+Bex[idx])
   return(list(a=a))
 }
 
 #Compute the objective function Qtheta given thetaold in the EM algorithm
-#Probably not needed
+#Not needed
 qtheta.ic_No_Cov=function(APi,BPi,cuts,n,a,pen=0,w=0) {
   #if (is.null(weights)) weights=rep(1,n)
   k=length(cuts)+1
