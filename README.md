@@ -153,9 +153,9 @@ Number of clusters:   4000   Maximum cluster size: 10
 
 We now illustrate the pseudo-values for the RMST. We first simulate data according to 
 a linear model with two covariates. It can be shown that the corresponding RMST will 
-then follow a linear relationship with respect to the two covariates and their 
-two interactions. The true effects were empirically estimated on a sample of size 
-1e7 and were found to be equal to 3.812552, 0.05705492, 0.05730445, 0.1044318.
+then follow a linear relationship with respect to the four covariates constructed from all  
+possible interactions. The true effects were empirically estimated (using the true times) 
+on a sample of size 1e7 and were found to be equal to 3.812552, 0.05705492, 0.05730445, 0.1044318.
 
 ``` r
 #Simulation in a linear model
@@ -216,6 +216,180 @@ Correlation Model:
 Returned Error Value:    0 
 Number of clusters:   10000   Maximum cluster size: 1 
 
+## Examples for interval-censored data
 
+We start by simulating true time events from the piecewise constant hazard model using the 
+`rsurv`function. We use three cut points and specify hazard values for the four segments 
+of cuts. We then generate interval-censored data through a visit process. Our simulation 
+setting leads to 21% of right-censored data. There are 34% of left intervals (whose right 
+interval is finite) that fall into the first cut segment. There are 11.5% of left intervals that 
+fall after the last cut.
+
+```r
+set.seed(28)
+n=4000
+cuts=c(20,40,50)
+alpha=c(0.01,0.025,0.05,0.1)
+TrueTime=rsurv(n,cuts,alpha) #generate true data from the pch model
+#Simulation of interval-censored data
+Right<-rep(Inf,n)
+nb.visit=5
+visTime=0;visit=matrix(0,n,nb.visit+1)
+visit=cbind(visit,rep(Inf,n))
+visit[,2]=visit[,1]+stats::runif(n,0,20)#runif(n,0,5)
+schedule=12
+for (i in 3:(nb.visit+1))
+{
+  visit[,i]=visit[,i-1]+stats::runif(n,0,schedule*2)
+}
+Left<-visit[,(nb.visit+1)]
+J=sapply(1:(n),function(i)cut(TrueTime[i],breaks=c(visit[1:(n),][i,]),
+                              labels=1:(nb.visit+1),right=FALSE)) #sum(is.na(J)) check!
+Left[1:(n)]=sapply(1:(n),function(i)visit[1:(n),][i,J[i]])
+Right[1:(n)]=sapply(1:(n),function(i)visit[1:(n),][i,as.numeric(J[i])+1])
+#View(data.frame(Left,Right,TrueTime)) #To see the generated data
+#mean(Right==Inf) #21% percentage of right-censored data
+#mean(Left<20 & Right!=Inf) #34% of observations
+#mean(Left>50) #11.5% of observations
+result=mleIC(Left,Right,cuts=cuts,a=rep(log(0.5),length(cuts)+1),
+             maxiter=1000,tol=1e-12,verbose=FALSE)
+#use verbose=TRUE to display all steps of the EM algorithm. 
+result$lambda
+```
+
+[1] 0.01016437 0.02550410 0.04860803 0.09904368
+
+We now illustrate that the `plot`function can be used, either to plot the survival 
+function or the hazard function. The pseudo-values of the survival function evaluated 
+at 10 different time points are computed using the `pseudoIC` function. We show that averaging 
+the pseudo-values over all individuals for each time point gives back the initial survival 
+estimator. This is a well known property of pseudo values.
+
+```r
+plot(result,surv=TRUE)
+tseq=seq(30,90,length.out=10)
+pseudo_val=pseudoIC(result,Left,Right,tseq=tseq,tau=NULL)
+lines(tseq,apply(pseudo_val,2,mean),type="p",col="red")
+```
+
+![](Image/pseudoSurvIC.png)
+
+We now show that in order to obtain pseudo values for the RMST, we just need to 
+specify a value for `tau` in the `pseudoIC` function. We look at the values 
+tau=30, 45, 50. We also show how to use the 
+`RmstIC` function that computes the RMST for a given value of tau. By averaging the pseudo 
+values as before, we see that we obtain again the value of the initial RMST estimator.
+
+```r
+set.seed(28)
+#Estimated value of RMST for tau=30
+RmstIC(cuts,result$lambda,tau=30)
+```
+restricted mean with upper limit = 30
+
+[1] 25.3011
+
+```r
+pseudoval=pseudoIC(result,Left,Right,tau=30) #pseudo-values
+mean(pseudoval)
+```
+
+[1] 25.30107
+
+```r
+#Estimated value of RMST for tau=45
+RmstIC(cuts,result$lambda,tau=45)
+```
+restricted mean with upper limit = 45
+
+[1] 33.0575
+
+```r
+pseudoval=pseudoIC(result,Left,Right,tau=45) #pseudo-values
+mean(pseudoval) #is close to the estimated RMST
+```
+
+[1] 33.05745
+
+```r
+#Estimated value of RMST for tau=50
+RmstIC(cuts,result$lambda,tau=50)
+```
+restricted mean with upper limit = 50
+
+[1] 34.7631
+
+```r
+pseudoval=pseudoIC(result,Left,Right,tau=50) #pseudo-values
+mean(pseudoval) #is close to the estimated RMST
+```
+
+[1] 34.76314
+
+Finally we illustrate how the pseudo values for the RMST can be used with generalised 
+estimating equations. We first simulate data according to a linear model with one 
+covariate and we set tau to infinity (in practice tau is taken large). We then generate 
+interval-censored data through a visit process as previously and we use the `geepack` 
+package to implement the generalised estimating equations. We hope to retrieve the 
+true effect of the covariate and the intercept which are equal to 4 and 6, respectively.
+
+```r
+set.sedd(28)
+n=1000
+tau=3000 #tau is chosen large
+X=runif(n,0,2)
+epsi=rnorm(n,0,1)
+theta0=6;theta1=4
+TrueTime=theta0+theta1*X+epsi #we can check that min(TrueTime) is positive!
+##Simulation of interval-censored data
+Right<-rep(Inf,n)
+nb.visit=5#nb.visit=10
+visTime=0;visit=matrix(0,n,nb.visit+1)
+visit=cbind(visit,rep(Inf,n))
+visit[,2]=visit[,1]+runif(n,0,10)#runif(n,0,5)
+schedule=2
+for (i in 3:(nb.visit+1))
+{
+  visit[,i]=visit[,i-1]+runif(n,0,schedule*2)
+}
+Left<-visit[,(nb.visit+1)]
+J=sapply(1:(n),function(i)cut(TrueTime[i],breaks=c(visit[1:(n),][i,]),
+labels=1:(nb.visit+1),right=FALSE)) #sum(is.na(J)) check!
+Left[1:(n)]=sapply(1:(n),function(i)visit[1:(n),][i,J[i]])
+Right[1:(n)]=sapply(1:(n),function(i)visit[1:(n),][i,as.numeric(J[i])+1])
+cuts=c(6,8,10,12,14)
+result=mleIC(Left,Right,cuts=cuts,a=rep(log(0.5),length(cuts)+1),
+maxiter=1000,tol=1e-12,verbose=FALSE)
+pseudoval=pseudoIC(result,Left,Right,tau=tau)
+require(geepack)
+data_pseudo<-data.frame(Y=c(pseudoval),X=X,id=rep(1:n))
+resultEst=geese(Y~X,id=id,jack=TRUE,family="gaussian", mean.link="identity",
+corstr="independence",scale.fix=TRUE,data=data_pseudo)
+summary(resultEst)
+```
+
+Call:
+geese(formula = Y ~ X, id = id, data = data_pseudo, family = "gaussian", 
+    mean.link = "identity", scale.fix = TRUE, corstr = "independence", 
+    jack = TRUE)
+
+Mean Model:
+ Mean Link:                 identity 
+ Variance to Mean Relation: gaussian 
+
+ Coefficients:
+
+ |               | estimate    |     san.se |     ajs.se  |   wald   |        p
+| ------------- |:----:|:----:|:----:|:----:|:----:| 
+(Intercept) | 5.953273 | 0.1161216 | 0.1162682 | 2628.366 0
+X     | 3.978100 | 0.1028926 | 0.1030417 | 1494.802 0
+
+Scale is fixed.
+
+Correlation Model:
+ Correlation Structure:     independence 
+
+Returned Error Value:    0 
+Number of clusters:   1000   Maximum cluster size: 1 
 
 <!-- badges: end -->
