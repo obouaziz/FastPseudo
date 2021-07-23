@@ -46,8 +46,8 @@ accurate even for small sample sizes.
 
 ## Examples for right-censored data
 
-We start with a very simple example. We first true survival times following the Weibull 
-distribution and a censoring variable giving approximately $21\%$ of censoring. We 
+We start with a very simple example. We first simulate true survival times following the Weibull 
+distribution and a censoring variable giving approximately 21% of censoring. We 
 then use the function `pseudoKM` to compute pseudo values for the survival function. Plots for 
 for two non-censored pseudo values and two censored pseudo values are displayed.
 
