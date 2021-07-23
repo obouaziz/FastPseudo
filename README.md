@@ -124,7 +124,7 @@ mean.link="cloglog", corstr="independence",scale.fix=TRUE,data=data_pseudo1)
 summary(result)
 ```
 
-Here is the output (we only dispaly the effect of X). We obtain an effect very 
+Here is the output (we only display the effect of X). We obtain an effect very 
 close to the true value.
 
 Call:
@@ -137,8 +137,11 @@ Mean Model:
  Variance to Mean Relation: gaussian 
 
  Coefficients:
-                                   estimate     san.se     ajs.se        wald            p
-X                               -0.70061472 0.07440208 0.07434210   88.672378 0.000000e+00
+
+|               | estimate    |     san.se |     ajs.se  |   wald   |        p
+| ------------- |:----:|:----:|:----:|:----:|:----:| 
+X               | -0.70061472 | 0.07440208 | 0.07434210  | 88.672378| 0.000000e+00 
+
 
 Scale is fixed.
 
@@ -210,5 +213,7 @@ Correlation Model:
 
 Returned Error Value:    0 
 Number of clusters:   10000   Maximum cluster size: 1 
+
+
 
 <!-- badges: end -->
