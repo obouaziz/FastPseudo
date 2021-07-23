@@ -124,6 +124,9 @@ mean.link="cloglog", corstr="independence",scale.fix=TRUE,data=data_pseudo1)
 summary(result)
 ```
 
+Here is the output (we only dispaly the effect of X). We obtain an effect very 
+close to the true value.
+
 Call:
 geese(formula = Y ~ X + as.factor(Time) - 1, id = id, data = data_pseudo1, 
     family = "gaussian", mean.link = "cloglog", scale.fix = TRUE, 
@@ -136,16 +139,6 @@ Mean Model:
  Coefficients:
                                    estimate     san.se     ajs.se        wald            p
 X                               -0.70061472 0.07440208 0.07434210   88.672378 0.000000e+00
-as.factor(Time)4.58335382087617 -6.53429441 0.50775420 0.50715275  165.611446 0.000000e+00
-as.factor(Time)11.8286543020646 -2.74044302 0.08585274 0.08575709 1018.903980 0.000000e+00
-as.factor(Time)16.6755085579274 -1.78659252 0.06120366 0.06114036  852.111025 0.000000e+00
-as.factor(Time)20.5772930286843 -1.16647825 0.05141861 0.05136871  514.650789 0.000000e+00
-as.factor(Time)24.0869086570905 -0.70279219 0.04624723 0.04620462  230.931094 0.000000e+00
-as.factor(Time)27.3635276924689 -0.30775626 0.04378098 0.04374176   49.413186 2.073453e-12
-as.factor(Time)30.8475008520177  0.04348487 0.04243428 0.04239671    1.050129 3.054774e-01
-as.factor(Time)34.3261917181898  0.39800295 0.04198368 0.04194640   89.869366 0.000000e+00
-as.factor(Time)38.7245546923862  0.77791031 0.04340787 0.04336864  321.160505 0.000000e+00
-as.factor(Time)46.0320710204542  1.29594973 0.04960845 0.04956259  682.440899 0.000000e+00
 
 Scale is fixed.
 
@@ -155,5 +148,67 @@ Correlation Model:
 Returned Error Value:    0 
 Number of clusters:   4000   Maximum cluster size: 10 
 
+We now illustrate the pseudo-values for the RMST. We first simulate data according to 
+a linear model with two covariates. It can be shown that the corresponding RMST will 
+then follow a linear relationship with respect to the two covariates and their 
+two interactions. The true effects were empirically estimated on a sample of size 
+1e7 and were found to be equal to 3.812552, 0.05705492, 0.05730445, 0.1044318.
+
+``` r
+#Simulation in a linear model
+set.seed(28)
+n<-10000
+sigma=3
+cpar=0.07
+tau=4
+alpha=c(5.5,0.25,0.25)
+X1=rbinom(n,1,0.5)
+X2=rbinom(n,1,0.5)
+epsi=runif(n,-sigma,sigma)
+TrueTime=alpha[1]+alpha[2]*X1+alpha[3]*X2+epsi
+Cens=rexp(n,cpar)
+Tobs=pmin(TrueTime,Cens)
+Tsort<-sort(Tobs,index.return=TRUE)
+Tobs_ord<-Tsort$x
+status=TrueTime<=Cens #approximately 35% of censoring
+status_ord<-status[Tsort$ix]
+X_ord1=X1[Tsort$ix];X_ord2=X2[Tsort$ix]
+X00=(X1==0 & X2==0)
+X01=(X1==0 & X2==1)
+X10=(X1==1 & X2==0)
+X11=(X1==1 & X2==1)
+X_ord00=X00[Tsort$ix];X_ord01=X01[Tsort$ix];X_ord10=X10[Tsort$ix];X_ord11=X11[Tsort$ix]
+#The true value of the parameters are c(3.812552,0.05705492,0.05730445,0.1044318)
+
+pseudo_val=pseudoKM(Tobs,status,tau)$pseudoval
+data_pseudo<-data.frame(Y=c(pseudo_val),X2=X01,X3=X10,X4=X11,id=rep(1:n))
+result=geese(Y~X2+X3+X4,id=id,jack=TRUE,family="gaussian",
+mean.link="identity", corstr="independence",scale.fix=TRUE,data=data_pseudo)
+summary(result)
+```
+
+Call:
+geese(formula = Y ~ X2 + X3 + X4, id = id, data = data_pseudo, 
+    family = "gaussian", mean.link = "identity", scale.fix = TRUE, 
+    corstr = "independence", jack = TRUE)
+
+Mean Model:
+ Mean Link:                 identity 
+ Variance to Mean Relation: gaussian 
+
+ Coefficients:
+              estimate      san.se      ajs.se         wald            p
+(Intercept) 3.82269101 0.008294085 0.008295309 212422.96376 0.0000000000
+X2TRUE      0.04045047 0.010693009 0.010694562     14.31025 0.0001550181
+X3TRUE      0.04017529 0.010816528 0.010818171     13.79565 0.0002038073
+X4TRUE      0.09621505 0.009633681 0.009635118     99.74738 0.0000000000
+
+Scale is fixed.
+
+Correlation Model:
+ Correlation Structure:     independence 
+
+Returned Error Value:    0 
+Number of clusters:   10000   Maximum cluster size: 1 
 
 <!-- badges: end -->
