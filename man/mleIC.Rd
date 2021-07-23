@@ -119,3 +119,6 @@ result=mleIC(Left,Right,cuts=cuts,a=rep(log(0.5),length(cuts)+1),
 maxiter=1000,tol=1e-12,verbose=TRUE)
 alpha #true value
 }
+\seealso{
+\code{\link{pchcumhaz}}, \code{\link{rsurv}}, \code{\link{pseudoIC}}, \code{\link{RmstIC}}.
+}

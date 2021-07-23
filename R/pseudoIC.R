@@ -39,6 +39,8 @@
 #' to simply change the values of the cuts. See \code{mleIC} for more details about
 #' those regularity conditions.
 #'
+#' @seealso \code{\link{mleIC}}, \code{\link{RmstIC}}, \code{\link{rsurv}}, \code{\link{pseudoKM}}.
+#'
 #' @return if \code{tau}=\code{NULL}, returns the pseudo-values of the survival function
 #' evaluated at \code{tseq}. The output is a matrix with number of rows equal to
 #' the sample size and number of columns equal to the length of \code{tseq}.

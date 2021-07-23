@@ -13,6 +13,12 @@ Rmst(Time, status, tau)
 
 \item{tau}{the time endpoint for computing the RMST}
 }
+\value{
+returns the RMST along with the value \code{tau} that was used.
+}
 \description{
 Compute the Restricted Mean Survival Time (RMST) for right-censored data
+}
+\seealso{
+\code{\link{pseudoKM}}, \code{\link{RmstIC}}.
 }

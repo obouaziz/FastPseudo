@@ -1,10 +1,11 @@
 #' Simulation of survival data following a PCH model
 #'
-#' Given a set of cuts and hazard values, generates a survival data sample from a piecewise-constant hazard (PCH) model
+#' Given a set of cuts and hazard values, generates a survival data sample from a piecewise-constant hazard (PCH) model.
 #' @param n the sample size.
 #' @param cuts the sequence of cuts. Default to NULL which corresponds to the exponential model.
 #' @param alpha the value of the hazard function between each cut. Should be of length equal to length(cuts)+1.
 #' @return A time vector of size \code{n} drawn from a PCH model with hazard equal to \code{alpha} between \code{cuts}.
+#' @seealso \code{\link{mleIC}}, \code{\link{pchcumhaz}}.
 #' @export
 #' @examples
 #' n=400

@@ -7,6 +7,8 @@
 #' @param alpha the value of the hazard function between each cut. Should be of
 #' length equal to \code{length(cuts)}+1.
 #' @param tau the time endpoint for computing the RMST.
+#' @return returns the RMST along with the value \code{tau} that was used.
+#' @seealso \code{\link{pseudoIC}}, \code{\link{mleIC}}, \code{\link{pchcumhaz}}, \code{\link{Rmst}}.
 
 #' @export
 RmstIC <- function(cuts,alpha,tau) {UseMethod("RmstIC")}

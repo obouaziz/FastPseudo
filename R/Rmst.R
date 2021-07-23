@@ -5,7 +5,8 @@
 #' @param Time a continuous time variable.
 #' @param status an indicator for censoring for the corresponding Time variable.
 #' @param tau the time endpoint for computing the RMST
-
+#' @return returns the RMST along with the value \code{tau} that was used.
+#' @seealso \code{\link{pseudoKM}}, \code{\link{RmstIC}}.
 #' @export
 Rmst <- function(Time,status,tau) {UseMethod("Rmst")}
 #' @export

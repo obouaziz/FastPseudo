@@ -48,6 +48,9 @@
 #' \tab \tab \cr
 #' \code{test} \tab  \code{ } \tab the relative error that has been reached at convergence of the algorithm\cr
 #' }
+#'
+#' @seealso \code{\link{pchcumhaz}}, \code{\link{rsurv}}, \code{\link{pseudoIC}}, \code{\link{RmstIC}}.
+#'
 #' @export
 #' @examples
 #' n=4000

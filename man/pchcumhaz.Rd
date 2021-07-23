@@ -22,3 +22,6 @@ alpha=c(0,0.05,0.1,0.2,0.4)/10
 seqtime=seq(0,100,by=10)
 pchcumhaz(seqtime,cuts,alpha)
 }
+\seealso{
+\code{\link{mleIC}}, \code{\link{rsurv}}.
+}

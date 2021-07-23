@@ -15,8 +15,10 @@ pseudoKM(Time, status, tau = NULL)
 specified, the pseudo-values for the RMST with time endpoint equal to tau is computed.}
 }
 \value{
-For the survival function (when tau equals NULL) it returns the pseudo values in a matrix form where the individuals are in column and the times
-are in the rows. For the RMST (when tau is specified) it returns the pseudo values in vector form.
+For the survival function (when tau equals NULL) it returns \code{pseudoval} that contains the pseudo values
+in a matrix form where the individuals are in column and the times are in the rows and \code{tseq} that contains the
+time points at which the pseudo-values are computed.
+For the RMST (when tau is specified) it returns \code{pseudoval} that contains the pseudo values in vector form.
 }
 \description{
 Compute pseudo values for the Kaplan-Meier estimator or for the Restricted Mean Survival Time (RMST) based on the Kaplan-Meier estimator.
@@ -36,6 +38,8 @@ to all observed times. Those pseudo-values are computed for the RMST if \code{ta
 
 A model based on Generalised Estimating Equation can be further specified through the \code{geese} function
 in the \code{geepack} package (see Examples below).
+
+It is also possible to use formulas of the type Surv(Time,status).
 }
 \examples{
 #Illustration of the pseudo-values for the Kaplan-Meier estimator on a simple simulated set
@@ -49,6 +53,7 @@ Tobs=pmin(TrueTime,Cens) #observed times
 status=TrueTime<=Cens #mean(status) #21\% of censoring on average
 
 pseudo_val=pseudoKM(Tobs,status,tau=NULL)
+#pseudo_val=pseudoKM(Surv(Tobs,status),tau=NULL)#also works
 VonM=pseudo_val$pseudoval
 tseq=pseudo_val$tseq
 
@@ -65,6 +70,11 @@ par(mfrow=c(1,1))
 
 plot(tseq,apply(VonM,1,mean),type="s",xlab="Time",ylab="Mean of pseudo-values")
 lines(survfit(Surv(Tobs,status)~1),col="red",conf.int=FALSE)
+
+#Example for the Rmst
+pseudo_val=pseudoKM(Tobs,status,tau=3)
+mean(pseudo_val$pseudoval)
+Rmst(Tobs,status,tau=3) #returns the same value
 
 #Illustration on simple simulated data for the pseudo-values for the RMST
 #Simulation in the Exponential model (no covariates)
@@ -191,4 +201,7 @@ data_VonM<-data.frame(Y=c(VonM),X2=X01,X3=X10,X4=X11,id=rep(1:n))
 resultEst=geese(Y~X2+X3+X4,id=id,jack=TRUE,family="gaussian",
 mean.link="identity", corstr="independence",scale.fix=TRUE,data=data_VonM)
 summary(resultEst)
+}
+\seealso{
+\code{\link{Rmst}}, \code{\link{pseudoIC}}.
 }

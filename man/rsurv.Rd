@@ -17,7 +17,7 @@ rsurv(n, cuts = NULL, alpha)
 A time vector of size \code{n} drawn from a PCH model with hazard equal to \code{alpha} between \code{cuts}.
 }
 \description{
-Given a set of cuts and hazard values, generates a survival data sample from a piecewise-constant hazard (PCH) model
+Given a set of cuts and hazard values, generates a survival data sample from a piecewise-constant hazard (PCH) model.
 }
 \examples{
 n=400
@@ -27,4 +27,7 @@ time=rsurv(n,cuts,alpha) #generate true data from the pch model
 censoring=stats::runif(n,min=70,max=90)
 time=pmin(time,censoring) #observed times
 delta=time<censoring #gives 62\% of observed data on average
+}
+\seealso{
+\code{\link{mleIC}}, \code{\link{pchcumhaz}}.
 }

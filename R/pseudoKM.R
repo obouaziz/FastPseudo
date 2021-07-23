@@ -20,8 +20,16 @@
 #'
 #' A model based on Generalised Estimating Equation can be further specified through the \code{geese} function
 #' in the \code{geepack} package (see Examples below).
-#' @return For the survival function (when tau equals NULL) it returns the pseudo values in a matrix form where the individuals are in column and the times
-#' are in the rows. For the RMST (when tau is specified) it returns the pseudo values in vector form.
+#'
+#' It is also possible to use formulas of the type Surv(Time,status).
+#'
+#' @return For the survival function (when tau equals NULL) it returns \code{pseudoval} that contains the pseudo values
+#' in a matrix form where the individuals are in column and the times are in the rows and \code{tseq} that contains the
+#' time points at which the pseudo-values are computed.
+#' For the RMST (when tau is specified) it returns \code{pseudoval} that contains the pseudo values in vector form.
+#'
+#' @seealso \code{\link{Rmst}}, \code{\link{pseudoIC}}.
+#'
 #' @export
 #' @examples
 #' #Illustration of the pseudo-values for the Kaplan-Meier estimator on a simple simulated set
@@ -35,6 +43,7 @@
 #' status=TrueTime<=Cens #mean(status) #21% of censoring on average
 #'
 #' pseudo_val=pseudoKM(Tobs,status,tau=NULL)
+#' #pseudo_val=pseudoKM(Surv(Tobs,status),tau=NULL)#also works
 #' VonM=pseudo_val$pseudoval
 #' tseq=pseudo_val$tseq
 #'
@@ -51,6 +60,11 @@
 #'
 #' plot(tseq,apply(VonM,1,mean),type="s",xlab="Time",ylab="Mean of pseudo-values")
 #' lines(survfit(Surv(Tobs,status)~1),col="red",conf.int=FALSE)
+#'
+#' #Example for the Rmst
+#' pseudo_val=pseudoKM(Tobs,status,tau=3)
+#' mean(pseudo_val$pseudoval)
+#' Rmst(Tobs,status,tau=3) #returns the same value
 #'
 #' #Illustration on simple simulated data for the pseudo-values for the RMST
 #' #Simulation in the Exponential model (no covariates)

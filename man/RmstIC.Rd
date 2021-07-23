@@ -14,7 +14,13 @@ length equal to \code{length(cuts)}+1.}
 
 \item{tau}{the time endpoint for computing the RMST.}
 }
+\value{
+returns the RMST along with the value \code{tau} that was used.
+}
 \description{
 Compute the Restricted Mean Survival Time (RMST) for interval-censored data
 from the piecewise constant hazard (PCH) model
+}
+\seealso{
+\code{\link{pseudoIC}}, \code{\link{mleIC}}, \code{\link{pchcumhaz}}, \code{\link{Rmst}}.
 }

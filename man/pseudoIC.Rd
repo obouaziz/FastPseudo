@@ -118,8 +118,7 @@ X=runif(n,0,2)
 epsi=rnorm(n,0,1)
 theta0=6;theta1=4
 TrueTime=theta0+theta1*X+epsi #min(TrueTime) must be positive!
-Cens=Inf #No censoring
-Tobs=pmin(TrueTime,Cens)
+##Simulation of interval-censored data
 Right<-rep(Inf,n)
 nb.visit=5#nb.visit=10
 visTime=0;visit=matrix(0,n,nb.visit+1)
@@ -145,4 +144,7 @@ data_pseudo<-data.frame(Y=c(pseudoval),X=X,id=rep(1:n))
 resultEst=geese(Y~X,id=id,jack=TRUE,family="gaussian", mean.link="identity",
 corstr="independence",scale.fix=TRUE,data=data_pseudo)
 summary(resultEst)
+}
+\seealso{
+\code{\link{mleIC}}, \code{\link{RmstIC}}, \code{\link{rsurv}}, \code{\link{pseudoKM}}.
 }

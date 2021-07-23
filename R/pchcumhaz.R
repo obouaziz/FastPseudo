@@ -4,6 +4,7 @@
 #' @param seqtime the time sequence.
 #' @param cuts the sequence of cuts.
 #' @param alpha the value of the hazard function between each cut. Should be of length equal to length(cuts)+1.
+#' @seealso \code{\link{mleIC}}, \code{\link{rsurv}}.
 #' @export
 #' @examples
 #' cuts=c(20,40,50,70)
