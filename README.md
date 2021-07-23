@@ -27,6 +27,8 @@ times as unobserved variables.
 - `pchcumhaz` computes the cumulative hazard function of a pch model. It takes as input a sequence of times at which the 
 cumulative hazard needs to be computed, the cuts and the values of the hazard between two cuts.
 - `pseudoIC` implements the pseudo-values for the survival function or the RMST. The fast approximation is based on the pch model. It takes as input interval-censored data and a value of the endpoint if the RMST should be computed.
+Of note, this function cannot currently take into account exact observations but this will be fixed 
+soon (hopefully)!
 
 ## Installation
 
@@ -253,7 +255,10 @@ Right[1:(n)]=sapply(1:(n),function(i)visit[1:(n),][i,as.numeric(J[i])+1])
 #mean(Left>50) #11.5% of observations
 result=mleIC(Left,Right,cuts=cuts,a=rep(log(0.5),length(cuts)+1),
              maxiter=1000,tol=1e-12,verbose=FALSE)
-#use verbose=TRUE to display all steps of the EM algorithm. 
+#use verbose=TRUE to display all steps of the EM algorithm.
+#note that mleIC can also deal with exact observations. They can specified by simply 
+#setting the same value for the Left and Right components corresponding to those 
+#exact values.
 result$lambda
 ```
 
