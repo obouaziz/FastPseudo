@@ -80,7 +80,7 @@ abline(v=Tobs[5],lty=2,col="red")
 par(mfrow=c(1,1))
 ```
 
-![](Image/pseudoObs.pdf)
+![](Image/pseudoObs.png)
 
 [1] 1.264241 1.729329 1.900426 1.963369 1.986524
 
