@@ -286,7 +286,6 @@ tau=30, 45, 50. We also show how to use the
 values as before, we see that we obtain again the value of the initial RMST estimator.
 
 ```r
-set.seed(28)
 #Estimated value of RMST for tau=30
 RmstIC(cuts,result$lambda,tau=30)
 ```
@@ -333,7 +332,7 @@ mean(pseudoval) #is close to the estimated RMST
 
 Finally we illustrate how the pseudo values for the RMST can be used with generalised 
 estimating equations. We first simulate data according to a linear model with one 
-covariate and we set tau to infinity (in practice tau is taken large). We then generate 
+covariate and we set tau to infinity (in practice a large value is taken for tau). We then generate 
 interval-censored data through a visit process as previously and we use the `geepack` 
 package to implement the generalised estimating equations. We hope to retrieve the 
 true effect of the covariate and the intercept which are equal to 4 and 6, respectively.
