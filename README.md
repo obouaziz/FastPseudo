@@ -2,7 +2,6 @@
 # FastPseudo
 
 <!-- badges: start -->
-<!-- badges: end -->
 
 Implementation of pseudo-values for right-censored or interval-censored data using 
 a fast (and very accurate) approximation. Both the pseudo-values for the survival function
@@ -49,11 +48,11 @@ accurate even for small sample sizes.
 
 We start with a very simple example. We first true survival times following the Weibull 
 distribution and a censoring variable giving approximately $21\%$ of censoring. We 
-then use the function pseudoKM to compute pseudo values for the survival function. Plots for 
+then use the function `pseudoKM` to compute pseudo values for the survival function. Plots for 
 for two non-censored pseudo values and two censored pseudo values are displayed.
 
 ``` r
-require(github)
+require(devtools)
 install_github("obouaziz/FastPseudo")
 library(FastPseudo)
 require(survival)
@@ -81,3 +80,8 @@ abline(v=Tobs[5],lty=2,col="red")
 par(mfrow=c(1,1))
 ```
 
+[My image](obouaziz.github.com/FastPseudo/Image/pseudoObs.pdf)
+
+[1] 1.264241 1.729329 1.900426 1.963369 1.986524
+
+<!-- badges: end -->
