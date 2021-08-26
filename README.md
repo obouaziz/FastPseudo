@@ -87,7 +87,8 @@ par(mfrow=c(1,1))
 ![](Image/pseudoObs.png)
 
 The two above plots correspond to non-censored observations while the two below plots 
-correspond to censored observations. 
+correspond to censored observations. The red dotted lines indicate when the observations 
+occurred. 
 We now simulate right-censored data from a Cox model with Weibull baseline. There 
 is only one covariate whose effect is equal to -0.69315. We compute the pseudo-values 
 at 10 different time points and we implement generalised estimating equations using the 
