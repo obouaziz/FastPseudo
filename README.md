@@ -11,7 +11,7 @@ data they are based on the piecewise constant hazard (PCH) model.
 
 The following functions are for right-censored observations only: 
 
-- `pseudoKM` implements the pseudo-values for the Kaplan-Meier estimator. It can returns the pseudo-values for 
+- `pseudoKM` implements the pseudo-values for the Kaplan-Meier estimator. It can return the pseudo-values for 
 the survival function or for the RMST. It takes as input a continuous time variable, its censoring indicator 
 and a value of the endpoint if the RMST should be computed.
 - `Rmst` computes the RMST for the Kaplan-Meier estimator. It takes as input a continuous time variable, its censoring indicator
@@ -42,7 +42,7 @@ library(FastPseudo)
 ## Statistical Methodology
 
 The programs are based on the following paper: [CRAN](https://CRAN.R-project.org). 
-While the paper mention that the pseudo-values are approximations of the standard 
+While the paper mentions that the pseudo-values are approximations of the standard 
 jackknife method, it is important to stress that the approximation is extremely 
 accurate even for small sample sizes.
 
@@ -50,8 +50,8 @@ accurate even for small sample sizes.
 
 We start with a very simple example. We first simulate true survival times following the Weibull 
 distribution and a censoring variable giving approximately 21% of censoring. We 
-then use the function `pseudoKM` to compute pseudo values for the survival function. Plots for 
-for two non-censored pseudo values and two censored pseudo values are displayed.
+then use the function `pseudoKM` to compute pseudo values for the survival function. Pseudo-value plots for 
+two non-censored observations and two censored observations are displayed.
 
 ``` r
 require(devtools)
@@ -86,7 +86,8 @@ par(mfrow=c(1,1))
 
 ![](Image/pseudoObs.png)
 
-
+The two above plots correspond to non-censored observations while the two below plots 
+correspond to censored observations. 
 We now simulate right-censored data from a Cox model with Weibull baseline. There 
 is only one covariate whose effect is equal to -0.69315. We compute the pseudo-values 
 at 10 different time points and we implement generalised estimating equations using the 
@@ -155,7 +156,7 @@ Number of clusters:   4000   Maximum cluster size: 10
 
 We now illustrate the pseudo-values for the RMST. We first simulate data according to 
 a linear model with two covariates. It can be shown that the corresponding RMST will 
-then follow a linear relationship with respect to the four covariates constructed from all  
+then follow a linear relationship with respect to the four covariates constructed from all 
 possible interactions. The true effects were empirically estimated (using the true times) 
 on a sample of size 1e7 and were found to be equal to 3.812552, 0.05705492, 0.05730445, 0.1044318.
 
@@ -256,7 +257,7 @@ Right[1:(n)]=sapply(1:(n),function(i)visit[1:(n),][i,as.numeric(J[i])+1])
 result=mleIC(Left,Right,cuts=cuts,a=rep(log(0.5),length(cuts)+1),
              maxiter=1000,tol=1e-12,verbose=FALSE)
 #use verbose=TRUE to display all steps of the EM algorithm.
-#note that mleIC can also deal with exact observations. They can specified by simply 
+#note that mleIC can also deal with exact observations. They can be specified by simply 
 #setting the same value for the Left and Right components corresponding to those 
 #exact values.
 result$lambda
